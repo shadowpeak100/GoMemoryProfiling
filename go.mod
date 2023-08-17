@@ -1,4 +1,4 @@
-module bitbucket.org/smartystreets/master-address-file
+module github.com/shadowpeak100/GoMemoryProfiling
 
 go 1.20
 

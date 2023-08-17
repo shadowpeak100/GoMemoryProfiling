@@ -1,4 +1,4 @@
-package main
+package memoryProfiling
 
 import (
 	"bufio"
@@ -9,10 +9,15 @@ import (
 	"path/filepath"
 )
 
-func loader(output chan string) {
+const (
+	SpeedDial = 100
+	Workers   = 8
+)
+
+func Loader(output chan string) {
 	folderPath := "inputData"
 
-	files, err := readFilesFromFolder(folderPath)
+	files, err := ReadFilesFromFolder(folderPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,7 +30,7 @@ func loader(output chan string) {
 	close(output)
 }
 
-func worker(files chan string, output chan string) {
+func Worker(files chan string, output chan string) {
 	for fileName := range files {
 		file, err := os.Open(fileName)
 		if err != nil {
@@ -37,10 +42,10 @@ func worker(files chan string, output chan string) {
 
 		i := 0
 		for scanner.Scan() {
-			if i%speedDial == 0 {
-				allCombinations := generatePermutations([]rune(scanner.Text()))
+			if i%SpeedDial == 0 {
+				allCombinations := GeneratePermutations([]rune(scanner.Text()))
 				for index := range allCombinations {
-					go simulateHighMemoryUsage(allCombinations[index])
+					go SimulateHighMemoryUsage(allCombinations[index])
 					output <- allCombinations[index]
 					i++
 				}
@@ -51,7 +56,7 @@ func worker(files chan string, output chan string) {
 	}
 }
 
-func readFilesFromFolder(folderPath string) ([]string, error) {
+func ReadFilesFromFolder(folderPath string) ([]string, error) {
 	var files []string
 
 	entries, err := ioutil.ReadDir(folderPath)
@@ -69,21 +74,21 @@ func readFilesFromFolder(folderPath string) ([]string, error) {
 	return files, nil
 }
 
-func writeToFile(filename string, content string) {
+func WriteToFile(filename string, content string) {
 	file, err := os.Create(filename)
-	isFatal(err)
+	IsFatal(err)
 	defer file.Close()
 	_, err = file.WriteString(content)
-	isFatal(err)
+	IsFatal(err)
 }
 
-func isFatal(err error) {
+func IsFatal(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func generatePermutations(chars []rune) []string {
+func GeneratePermutations(chars []rune) []string {
 	if len(chars) == 0 {
 		return []string{""}
 	}
@@ -95,7 +100,7 @@ func generatePermutations(chars []rune) []string {
 		copy(remainingChars[i:], chars[i+1:])
 
 		// Recursively generate permutations for remaining characters
-		subPerms := generatePermutations(remainingChars)
+		subPerms := GeneratePermutations(remainingChars)
 
 		// Append the selected character to each sub-permutation
 		for _, subPerm := range subPerms {
@@ -106,7 +111,7 @@ func generatePermutations(chars []rune) []string {
 	return perms
 }
 
-func simulateHighMemoryUsage(input string) {
+func SimulateHighMemoryUsage(input string) {
 	memoryHog := ""
 
 	for i := 0; i < 750; i++ {
