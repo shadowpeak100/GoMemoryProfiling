@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	_ "net/http/pprof"
 	"strings"
 	"sync"
@@ -11,33 +12,32 @@ import (
 )
 
 const (
-	workers = 8
+	workers   = 8
+	speedDial = 10
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
-	//go func() { http.ListenAndServe(":7777", nil) }()
-	//go func() { http.ListenAndServe(":7778", nil) }()
-	//go func() { http.ListenAndServe(":7779", nil) }()
-	defer profile.Start(profile.TraceProfile, profile.ProfilePath("profiling")).Stop()
-	fmt.Println("Trace profile started, access after program has exited with: 'go tool trace trace.out'")
+	// when this is enabled you can connect with the following:
+	//go tool pprof -http :9090 http://<IP_Address>:7777/debug/pprof/heap
+	//go tool pprof -http :9090 http://<IP_Address>:7777/debug/pprof/profile
+	//go tool pprof -http :9090 http://<IP_Address>:7777/debug/pprof/block
+	//go tool pprof -http :9090 http://<IP_Address>:7777/debug/pprof/goroutine
+	//go tool pprof -http :9090 http://<IP_Address>:7777/debug/pprof/trace
+	go func() { http.ListenAndServe(":7777", nil) }()
 
-	//amdahls law
-	//defer profile.Start(profile.CPUProfile, profile.ProfilePath("profiling")).Stop()
-	//fmt.Println("CPU profile started, access after program has exited with: 'go tool pprof -http=:8080 cpu.prof'")
+	//trace profiling
+	//defer profile.Start(profile.TraceProfile, profile.ProfilePath("profiling")).Stop()
+	//defer fmt.Println("Trace profile started, access after program has exited with: 'go tool trace trace.out'")
 
-	//defer profile.Start(profile.MemProfile, profile.MemProfileRate(1), profile.ProfilePath(".")).Stop()
-	//fmt.Println("Memory profile started, access after program has exited with: 'go tool pprof -http=:8080 mem.pprof'")
+	//cpu profiling
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath("profiling")).Stop()
+	defer fmt.Println("CPU profile started, access after program has exited with: 'go tool pprof -http=:8080 cpu.pprof'")
 
-	//if *cpuprofile != "" {
-	//	f, err := os.Create(*cpuprofile)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//	pprof.StartCPUProfile(f)
-	//	defer pprof.StopCPUProfile()
-	//}
+	//memory profiling
+	//defer profile.Start(profile.MemProfile, profile.MemProfileRate(1), profile.ProfilePath("profiling")).Stop()
+	//defer fmt.Println("Memory profile started, access after program has exited with: 'go tool pprof -http=:8080 mem.pprof'")
 
 	fileChan := make(chan string)
 	go loader(fileChan)

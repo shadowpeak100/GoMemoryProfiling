@@ -7,19 +7,16 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 func loader(output chan string) {
 	folderPath := "inputData"
 
-	// Read the files in the folder
 	files, err := readFilesFromFolder(folderPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Print the list of files
 	fmt.Println("Files in the folder:")
 	for _, file := range files {
 		output <- file
@@ -38,10 +35,19 @@ func worker(files chan string, output chan string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Split(bufio.ScanWords)
 
+		i := 0
 		for scanner.Scan() {
-			output <- scanner.Text()
+			if i%speedDial == 0 {
+				allCombinations := generatePermutations([]rune(scanner.Text()))
+				for index := range allCombinations {
+					go simulateHighMemoryUsage(allCombinations[index])
+					output <- allCombinations[index]
+					i++
+				}
+			} else {
+				output <- scanner.Text()
+			}
 		}
-		time.Sleep(time.Millisecond * 1)
 	}
 }
 
@@ -74,5 +80,36 @@ func writeToFile(filename string, content string) {
 func isFatal(err error) {
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func generatePermutations(chars []rune) []string {
+	if len(chars) == 0 {
+		return []string{""}
+	}
+
+	perms := []string{}
+	for i, char := range chars {
+		remainingChars := make([]rune, len(chars)-1)
+		copy(remainingChars, chars[:i])
+		copy(remainingChars[i:], chars[i+1:])
+
+		// Recursively generate permutations for remaining characters
+		subPerms := generatePermutations(remainingChars)
+
+		// Append the selected character to each sub-permutation
+		for _, subPerm := range subPerms {
+			perms = append(perms, string(char)+subPerm)
+		}
+	}
+
+	return perms
+}
+
+func simulateHighMemoryUsage(input string) {
+	memoryHog := ""
+
+	for i := 0; i < 750; i++ {
+		memoryHog += input
 	}
 }
