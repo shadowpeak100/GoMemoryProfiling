@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	_ "net/http/pprof"
 	"strings"
 	"sync"
 
@@ -45,7 +46,7 @@ func main() {
 		i++
 		builder.WriteString(" " + word)
 		if i%100_000 == 0 {
-			fmt.Println(i, "lines saved in strings builder")
+			fmt.Println(i, "lines saved in strngs builder")
 		}
 	}
 
