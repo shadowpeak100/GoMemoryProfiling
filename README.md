@@ -1,6 +1,6 @@
 # GoMemoryProfiling
 
-The following is a demonstration on using various profiling tools within go. There are 3 different main folders, one each of CPU, memory and trace profiling.
+The following is a demonstration on using various profiling tools within go. There are 3 different main folders, each demonstrating a different type of profiling: CPU, memory and trace.
 
 ## Profiling tools can be accessed either live or after file generation
 ### Viewing live:
